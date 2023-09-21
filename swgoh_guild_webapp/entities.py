@@ -1,0 +1,110 @@
+from dataclasses import dataclass, field
+from typing import Self
+import pandas as pd
+
+@dataclass
+class Character:
+    charid: str
+    name: str
+    relic: int
+    rarity: int
+    gp: int
+    combat_type: str
+
+    @property
+    def combat_type(self) -> str:
+        return self._combat_type
+
+    @combat_type.setter
+    def combat_type(self, value: str) -> None:
+        if str(value).lower() in ('character', 'ship'):
+            self._combat_type = value.lower()
+        else:
+            print(f'{self.name} type not recognized! Setting to character by default.')
+            self._combat_type = 'character'
+        return
+
+    @classmethod
+    def build_char(cls, char_dict: dict[str, str or int]) -> Self:
+        return cls(**char_dict)
+
+    def to_list(self):
+        return [self.charid, self.name, self.relic, self.rarity, self.gp, self.combat_type]
+
+
+@dataclass
+class CharacterRoster:
+    roster_dict: dict[str, Character] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        self.data = self._build_df(self.roster_dict)
+        return
+    
+    @staticmethod
+    def _build_df(roster_dict: dict[str, Character]) -> pd.DataFrame:
+        col_names = Character.__dataclass_fields__.keys()
+        df = pd.DataFrame({col: [] for col in col_names})
+        for char in roster_dict.values():
+            df.loc[len(df), :] = char.to_list()
+        df = df.astype({col: Character.__dataclass_fields__[col].type for col in col_names})
+        return df
+
+    def add_unit(self, charid: str, name: str, relic: int, rarity: int, gp: int, combat_type: str) -> None:
+        self.roster_dict[charid] = Character(charid, name, relic, rarity, gp, combat_type)
+        return
+
+    @classmethod
+    def build_roster(cls, raw_roster_dict: dict[str, str or int]) -> Self:
+        roster_dict = {}
+        for charid, char_dict in raw_roster_dict.items():
+            roster_dict[charid] = Character.build_char(char_dict)
+        return cls(roster_dict)
+
+    def __getitem__(self, key):
+        return self.roster_dict[key]
+
+
+@dataclass
+class Player:
+    allycode: int
+    name: str
+    gp: int
+    roster: CharacterRoster
+
+    def __post_init__(self) -> None:
+        self.data = self._build_df(self.name, self.allycode, self.roster)
+        return
+
+    @staticmethod
+    def _build_df(name: str, allycode: int, roster: CharacterRoster) -> pd.DataFrame:
+        df = roster.data
+        df.loc[:, 'owner'] = name
+        df.loc[:,'allycode'] = allycode
+        return df
+
+    @classmethod
+    def build_player(cls, player_dict: dict[str, str or int or dict]) -> Self:
+        player_dict['roster'] = CharacterRoster.build_roster(player_dict['roster'])
+        return cls(**player_dict)
+
+
+@dataclass
+class Guild:
+    name: str
+    members: list[Player]
+
+    def __post_init__(self) -> None:
+        self.data = self._build_df(self.members)
+        return
+
+    @staticmethod
+    def _build_df(members: list[Player]) -> pd.DataFrame:
+        df = pd.concat([member.data for member in members])
+        df = df.reset_index(drop=True)
+        return df
+
+    @classmethod
+    def build_guild(cls, guild_dict: dict[str, list]):
+        name = list(guild_dict.keys())[0]
+        members = [Player.build_player(player_dict) for player_dict in guild_dict[name]]
+        return cls(name, members)

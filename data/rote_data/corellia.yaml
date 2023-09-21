@@ -1,0 +1,57 @@
+name: Corellia
+relic_req: 5
+sector: 1
+alignment: mixed
+star_thresh:
+  - 111.7
+  - 178.7
+  - 238.3
+combat_missions:
+  - points: 0.2
+    special_reqs:
+    - DOCTORAPHRA
+  - points: 0.2
+  - points: 0.2
+    special_reqs:
+    - JABBATHEHUTT
+  - points: 0.4
+    waves: 1
+  - points: 0
+    special_reqs:
+    - QIRA
+    - YOUNGHAN
+operations:
+  points: 10
+  reqs:
+  - COMMANDERAHSOKA: 1
+    CHEWBACCALEGENDARY: 1
+    JEDIKNIGHTREVAN: 1
+    EETHKOTH: 1
+    DARTHTRAYA: 1
+    BOBAFETTSCION: 2
+    GRANDADMIRALTHRAWN: 1
+    C3POLEGENDARY: 1
+    IMAGUNDI: 1
+    FOSITHTROOPER: 1
+    R2D2_LEGENDARY: 1
+    DARTHREVAN: 1
+    HYENABOMBER: 1
+    JEDISTARFIGHTERANAKIN: 1
+  - BENSOLO: 1
+    GRANDMASTERYODA: 1
+    COMMANDERLUKESKYWALKER: 2
+    BADBATCHHUNTER: 1
+    HANSOLO: 1
+    DARTHMALGUS: 1
+    C3POLEGENDARY: 1
+    DARTHREVAN: 1
+    JOLEEBINDO: 1
+    POE: 1
+    BOBAFETTSCION: 1
+    THEMANDALORIANBESKARARMOR: 1
+    TRIPLEZERO: 1
+    GEONOSIANBROODALPHA: 1
+  - DUMMY: 15
+  - DUMMY: 15
+  - DUMMY: 15
+  - DUMMY: 15
