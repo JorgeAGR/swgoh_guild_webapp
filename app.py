@@ -1,7 +1,6 @@
 import streamlit as st
 
-from app_utils import *
-from swgoh_guild_webapp.swgoh_help_fetcher import SwgohHelpFetcher
+from streamlit_app.app_utils import *
 from swgoh_guild_webapp.entities import Guild
 
 
