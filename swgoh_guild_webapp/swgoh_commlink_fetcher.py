@@ -11,6 +11,7 @@ TO DOs:
     return['lastActivity']/1000
     so to datetime:
     datetime.datetime.fromtimestamp(return['lastActivity']/1000)
+test allycode: 795921637
 '''
 
 @dataclass
@@ -79,10 +80,17 @@ class SwgohCommlinkFetcher:
                                 'combat_type': char_dict['combatType']} for char_dict in rosterUnit}
         return parsed_roster
 
-    def get_player_data(self, allycode: str) -> dict[str, Any]:
+    def get_player_data(self, value: int or str, key: str) -> dict[str, Any]:
+        '''
+        key : 'allyCode' or 'playerId'
+        '''
+        if key not in ('allyCode', 'playerId'):
+            raise 'Invalid key for fetching player data'
+        if (key == 'allyCode') and isinstance(value, int):
+            value = str(value)
         payload = {
             "payload": {
-                "allyCode": allycode,
+                key: value,
             },
             "enums": False
             }
