@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Self
+from swgoh_commlink_fetcher import SwgohCommlinkFetcher
+from typing import Self, Any
 import pandas as pd
 
 @dataclass
@@ -37,7 +38,7 @@ class CharacterRoster:
     roster_dict: dict[str, Character] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        self.data = self._build_df(self.roster_dict)
+        # self.data = self._build_df(self.roster_dict)
         return
     
     @staticmethod
@@ -66,13 +67,14 @@ class CharacterRoster:
 
 @dataclass
 class Player:
+    player_id: str
     allycode: int
     name: str
     gp: int
     roster: CharacterRoster
 
     def __post_init__(self) -> None:
-        self.data = self._build_df(self.name, self.allycode, self.roster)
+        #self.data = self._build_df(self.name, self.allycode, self.roster)
         return
 
     @staticmethod
@@ -83,18 +85,22 @@ class Player:
         return df
 
     @classmethod
-    def build_player(cls, player_dict: dict[str, str or int or dict]) -> Self:
-        player_dict['roster'] = CharacterRoster.build_roster(player_dict['roster'])
-        return cls(**player_dict)
+    def build_player(cls, player_request: dict[str, Any], gp: int) -> Self:
+        player_id = player_request['playerId']
+        allycode = int(player_request['allyCode'])
+        name = player_request['name']
+        return cls(player_id, allycode, name, gp, CharacterRoster([]))
 
 
 @dataclass
 class Guild:
+    guild_id: str
     name: str
+    guild_gp: int
     members: list[Player]
 
     def __post_init__(self) -> None:
-        self.data = self._build_df(self.members)
+        #self.data = self._build_df(self.members)
         return
 
     @staticmethod
@@ -104,7 +110,15 @@ class Guild:
         return df
 
     @classmethod
-    def build_guild(cls, guild_dict: dict[str, list]):
-        name = list(guild_dict.keys())[0]
-        members = [Player.build_player(player_dict) for player_dict in guild_dict[name]]
-        return cls(name, members)
+    def build_guild(cls, guild_request: dict[str, Any], members: list[Player]):
+        guild_id = guild_request['profile']['id']
+        name = guild_request['profile']['name']
+        guild_gp = guild_request['profile']['guildGalacticPower']
+        return cls(guild_id, name, guild_gp, members)
+
+
+if __name__ == '__main__':
+    guild_id = 'dYXen85NS3SCrdllQ4lAEg'
+    fetcher = SwgohCommlinkFetcher()
+    guild_request = fetcher.get_guild_data(guild_id)
+    guild = Guild.build_guild(guild_request, members=[])
