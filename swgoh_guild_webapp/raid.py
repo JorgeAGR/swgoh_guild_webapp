@@ -30,12 +30,11 @@ class RaidResults:
         return scores_df
 
     @classmethod
-    def build_results(cls, guild_request: dict) -> Self:
-        results_dict = guild_request['recentRaidResult'][0]
-        raid_id = results_dict['raidId']
-        total_points = results_dict['guildRewardScore']
-        end_date = datetime.datetime.fromtimestamp(int(results_dict['endTime']))
-        scores_df = cls.build_scores_df(results_dict['raidMember'])
+    def build_results(cls, guild_request_raid_result: dict) -> Self:
+        raid_id = guild_request_raid_result['raidId']
+        total_points = guild_request_raid_result['guildRewardScore']
+        end_date = datetime.datetime.fromtimestamp(int(guild_request_raid_result['endTime']))
+        scores_df = cls.build_scores_df(guild_request_raid_result['raidMember'])
         return cls(raid_id, total_points, end_date, scores_df)
     
 if __name__ == '__main__':
@@ -43,4 +42,4 @@ if __name__ == '__main__':
     guild_id = 'dYXen85NS3SCrdllQ4lAEg'
     fetcher = SwgohCommlinkFetcher()
     guild_data = fetcher.get_guild_data(guild_id)
-    raid = RaidResults.build_results(guild_data)
+    raid = RaidResults.build_results(guild_data['recentRaidResult'][0])
