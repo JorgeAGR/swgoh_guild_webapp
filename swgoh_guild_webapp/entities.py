@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from swgoh_commlink_fetcher import SwgohCommlinkFetcher
 from typing import Self, Any
 import pandas as pd
 
@@ -100,13 +99,17 @@ class Guild:
     members: list[Player]
 
     def __post_init__(self) -> None:
-        #self.data = self._build_df(self.members)
+        self.data = self._build_df(self.members)
         return
 
     @staticmethod
     def _build_df(members: list[Player]) -> pd.DataFrame:
-        df = pd.concat([member.data for member in members])
-        df = df.reset_index(drop=True)
+        data = {'Player ID': [member.player_id for member in members],
+                'Allycode': [member.allycode for member in members],
+                'Name': [member.name for member in members],
+                'GP': [member.gp for member in members]}
+        type_mapper = {'Player ID': str, 'Allycode': str, 'Name': str, 'GP': int}
+        df = pd.DataFrame(data).astype(type_mapper).sort_values(by='GP', ascending=False)
         return df
 
     @classmethod
@@ -118,6 +121,7 @@ class Guild:
 
 
 if __name__ == '__main__':
+    from swgoh_commlink_fetcher import SwgohCommlinkFetcher
     guild_id = 'dYXen85NS3SCrdllQ4lAEg'
     fetcher = SwgohCommlinkFetcher()
     guild_request = fetcher.get_guild_data(guild_id)
