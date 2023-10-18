@@ -40,9 +40,6 @@ class GuildFileManager:
         file_path = os.path.join(dir, name)
         df.to_csv(file_path, index=False)
         return
-    
-    # def archive_latest_df(self):
-    #     latest_path = os.path.join(self.out_dir, 'latest', )
 
     def _read_request_json(self, file_path: os.PathLike) -> dict[str, Any]:
         with open(file_path, 'r') as file:
@@ -104,11 +101,10 @@ class GuildManager:
 
     @property
     def valid_requests(self):
-        return ['guild_request', 'raid_result']
+        return ['guild_request', 'raid_result', 'members_request']
 
-    @property
-    def latest_request_time(self):
-        latest_timestamp = file_manager.find_latest_request('guild_request')
+    def latest_request_time(self, name: str):
+        latest_timestamp = file_manager.find_latest_request(name)
         if latest_timestamp is None:
             return datetime.datetime.fromtimestamp(0)
         else:
@@ -118,35 +114,40 @@ class GuildManager:
         guild_request = self.fetcher.get_guild_data(self.guild_id)
         return guild_request
     
-    def _request_member_data(self) -> list[dict]:
-        '''
-        Currently this has no GP info. Need a way to store that so I can start caching it
-        '''
-        member_requests = [self.fetcher.get_player_data(member['playerId'], 'playerId') for member in self._latest_guild_request['member']]
-        return member_requests
+    def _request_member_data(self) -> dict[str, dict]:
+        members_requests = {member['playerId']: self.fetcher.get_player_data(member['playerId'], 'playerId') for member in self._latest_guild_request['member']}
+        return members_requests
     
     def get_latest_guild_data(self) -> dict[str, Any]:
         current_time = datetime.datetime.now()
-        if (current_time - self.latest_request_time).total_seconds() > 60*60*self.refresh_hours:
+        if (current_time - self.latest_request_time('guild_request')).total_seconds() > 60*60*self.refresh_hours:
             latest_guild_request = self._request_guild_data()
             self.file_manager.write_latest_request(latest_guild_request, 'guild_request', current_time)
         return self.file_manager.read_latest_request('guild_request')
+    
+    def get_latest_member_data(self) -> list[dict]:
+        current_time = datetime.datetime.now()
+        if (current_time - self.latest_request_time('members_request')).total_seconds() > 60*60*self.refresh_hours:
+            latest_members_request = self._request_member_data()
+            self.file_manager.write_latest_request(latest_members_request, 'members_request', current_time)
+        return self.file_manager.read_latest_request('members_request')
     
     def get_latest_raid_data(self) -> dict[str, Any]:
         latest_raid_result = self.file_manager.read_latest_request('raid_result')
         if (latest_raid_result is None) or (latest_raid_result['endTime'] != self._latest_guild_request['recentRaidResult'][0]['endTime']):
             latest_raid_result = self._latest_guild_request['recentRaidResult'][0]
-            self.file_manager.write_latest_request(latest_raid_result, 'raid_result', self.latest_request_time)
+            self.file_manager.write_latest_request(latest_raid_result, 'raid_result', self.latest_request_time('guild_request'))
         return self.file_manager.read_latest_request('raid_result')
     
     def get_latest_data(self) -> None:
         self._latest_guild_request = self.get_latest_guild_data()
         self._latest_raid_result = self.get_latest_raid_data()
+        self._latest_member_request = self.get_latest_member_data()
         return
 
     def build_guild(self) -> Guild:
         self.get_latest_data()
-        members = []#[Player.build_player(self.fetcher.get_player_data(member['playerId'], 'playerId'), member['galacticPower']) for member in self.latest_guild_request['member']]
+        members = [Player.build_player(self._latest_member_request[member['playerId']], member['galacticPower']) for member in self._latest_guild_request['member']]
         return Guild.build_guild(self._latest_guild_request, members)
     
     def build_raid(self) -> RaidResults:
