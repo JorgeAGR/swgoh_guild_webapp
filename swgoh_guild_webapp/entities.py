@@ -104,12 +104,12 @@ class Guild:
 
     @staticmethod
     def _build_df(members: list[Player]) -> pd.DataFrame:
-        data = {'Player ID': [member.player_id for member in members],
+        data = {'PlayerID': [member.player_id for member in members],
                 'Allycode': [member.allycode for member in members],
                 'Name': [member.name for member in members],
                 'GP': [member.gp for member in members]}
-        type_mapper = {'Player ID': str, 'Allycode': str, 'Name': str, 'GP': int}
-        df = pd.DataFrame(data).astype(type_mapper).sort_values(by='GP', ascending=False)
+        type_mapper = {'PlayerID': str, 'Allycode': str, 'Name': str, 'GP': int}
+        df = pd.DataFrame(data).astype(type_mapper).sort_values(by='GP', ascending=False).set_index('PlayerID')
         return df
 
     @classmethod
