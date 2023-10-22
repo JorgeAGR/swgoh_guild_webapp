@@ -16,12 +16,7 @@ test allycode: 795921637
 
 @dataclass
 class SwgohCommlinkFetcher:
-    address: str = 'localhost'
-    port: int = 3200
-
-    @property
-    def host(self) -> str:
-        return f'http://{self.address}:{self.port}'
+    host: str = 'http://localhost:3200'
     
     @property
     def game_version(self) -> str:
