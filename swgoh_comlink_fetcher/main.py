@@ -26,7 +26,7 @@ app = FastAPI()
 def fetch_latest_guild_data(guild_id: str) -> int:
     comlink_fetcher = SwgohCommlinkFetcher()
     guild_data_request = comlink_fetcher.get_guild_data(guild_id)
-    return requests.codes.ok
-
+    member_data_list = comlink_fetcher.get_member_data(guild_data_request)
+    return comlink_fetcher.save_guild_and_member_data(guild_data_request, member_data_list)
 if __name__ == '__main__':
     pass
