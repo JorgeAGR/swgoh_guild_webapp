@@ -16,11 +16,14 @@ TO DOs:
 test allycode: 795921637
 '''
 
+
 @dataclass
 class SwgohCommlinkFetcher:
 
     def __post_init__(self):
         self.comlink_host = os.environ['COMLINK_URL']
+        self.raid_bq_dataset = os.environ['BQ_RAID_DATASET']
+        self.bq_dataset_location = os.environ['BQ_RAID_DATASET']
         self.bucket_name = os.environ['BUCKET_NAME']
         self.oauth2 = os.environ['OAUTH2']
         return
@@ -28,6 +31,9 @@ class SwgohCommlinkFetcher:
     @property
     def game_version(self) -> str:
         return requests.post(f'{self.comlink_host}/metadata').json()['latestGamedataVersion']
+    
+    @property
+    def valid_raids(self) -> 
     
     def get_unit_data(self) -> dict[Any]:
         # currently only need segment 3 for unit data
@@ -107,7 +113,7 @@ class SwgohCommlinkFetcher:
             }
         return requests.post(f'{self.comlink_host}/guild', json=payload).json()['guild']
     
-    def save_guild_and_member_data(self, guild_data_request: dict[str, Any], member_data_list: list[dict]) -> None:
+    def save_guild_and_member_data(self, guild_data_request: dict[str, Any], member_data_list: list[dict]) -> requests.Response:
         guild_data_request['member'] = member_data_list
         # with open('latest_request.json', 'r') as file:
         #     json.dump(guild_data_request, file)
@@ -117,3 +123,8 @@ class SwgohCommlinkFetcher:
         }
         url = f'https://storage.googleapis.com/upload/storage/v1/b/{self.bucket_name}/o?uploadType=media&name=latest_request.json'
         return requests.post(url, data=guild_data_request, headers=headers)
+    
+    def check_latest_raid_date(self)
+
+    def upload_raid_data(self) -> None:
+        return
