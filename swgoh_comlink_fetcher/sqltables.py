@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import abc
 import os
 import datetime
+import pandas as pd
 from typing import Self, Any
 from google.cloud import bigquery
 
@@ -33,8 +34,7 @@ class RaidSQLTable(abc.ABC):
     def query(self, query: str) -> None:
         return
     
-    @property
-    def latest_raid_date_query(self) -> str:
+    def latest_raid_date(self) -> pd.DataFrame:
         query = f'''
         SELECT
         DISTINCT(EndDate)
@@ -49,11 +49,24 @@ class RaidSQLTable(abc.ABC):
         )
         AND DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {self.raid.duration} DAY)
         '''
-        return query
-
-    @property
-    def latest_raid_date(self) -> datetime.datetime:
-        return datetime.date.fromisoformat(self.query(self.latest_raid_date_query))
+        return self.query(query)
+    
+    def latest_raid_results(self) -> pd.DataFrame:
+        query = f'''
+        SELECT
+        *
+        FROM
+        `{self.table_location}.{self.raid.id}` t
+        WHERE DATE(EndDate) IN
+        (
+        SELECT 
+            MAX(DATE(EndDate)) AS max_partition
+        FROM `{self.table_location}.{self.raid.id}`
+        WHERE DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {self.raid.duration} DAY)
+        )
+        AND DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {self.raid.duration} DAY)
+        '''
+        return self.query(query)
 
     @abc.abstractmethod
     def write(self, rows: list[dict]) -> None:
@@ -69,8 +82,8 @@ class RaidGoogleBigQueryTable(RaidSQLTable):
         self.client = bigquery.Client(self.project)
         return
     
-    def query(self, query: str) -> None:
-        return self.client.query(query, location=self.location)
+    def query(self, query: str) -> pd.DataFrame:
+        return self.client.query(query, location=self.location).result().to_dataframe()
     
     def write(self, rows: list[dict]) -> None:
         return
