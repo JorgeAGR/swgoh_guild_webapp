@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 import os
 import json
-
+from google.cloud import storage
 
 '''
 TO DOs:
@@ -19,21 +19,13 @@ test allycode: 795921637
 
 @dataclass
 class SwgohCommlinkFetcher:
-
-    def __post_init__(self):
-        self.comlink_host = os.environ['COMLINK_URL']
-        self.raid_bq_dataset = os.environ['BQ_RAID_DATASET']
-        self.bq_dataset_location = os.environ['BQ_RAID_DATASET']
-        self.bucket_name = os.environ['BUCKET_NAME']
-        self.oauth2 = os.environ['OAUTH2']
-        return
+    project: str
+    comlink_host: str
+    bucket_name: str
     
     @property
     def game_version(self) -> str:
         return requests.post(f'{self.comlink_host}/metadata').json()['latestGamedataVersion']
-    
-    @property
-    def valid_raids(self) -> 
     
     def get_unit_data(self) -> dict[Any]:
         # currently only need segment 3 for unit data
@@ -114,17 +106,17 @@ class SwgohCommlinkFetcher:
         return requests.post(f'{self.comlink_host}/guild', json=payload).json()['guild']
     
     def save_guild_and_member_data(self, guild_data_request: dict[str, Any], member_data_list: list[dict]) -> requests.Response:
+        basename = 'latest_request.json'
         guild_data_request['member'] = member_data_list
-        # with open('latest_request.json', 'r') as file:
-        #     json.dump(guild_data_request, file)
-        headers = {
-            'Content-Type': 'json',
-            'Authorization': f'Bearer {self.oauth2}'
-        }
-        url = f'https://storage.googleapis.com/upload/storage/v1/b/{self.bucket_name}/o?uploadType=media&name=latest_request.json'
-        return requests.post(url, data=guild_data_request, headers=headers)
-    
-    def check_latest_raid_date(self)
-
-    def upload_raid_data(self) -> None:
-        return
+        with open(basename, 'w') as file:
+            json.dump(guild_data_request, file)
+        # headers = {
+        #     'Content-Type': 'json'
+        # }
+        # url = f'https://storage.googleapis.com/upload/storage/v1/b/{self.bucket_name}/o?uploadType=media&name=latest_request.json'
+        # return requests.post(url, data=guild_data_request, headers=headers)
+        client = storage.Client(project=self.project)
+        bucket = client.bucket(self.bucket_name)
+        blob = bucket.blob(basename)
+        blob.upload_from_filename(basename, content_type='json')
+        return requests.Response.ok
