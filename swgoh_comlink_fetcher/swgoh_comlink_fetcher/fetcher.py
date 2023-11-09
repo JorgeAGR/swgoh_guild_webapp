@@ -102,19 +102,3 @@ class SwgohCommlinkFetcher:
             "enums": False
             }
         return requests.post(f'{self.comlink_host}/guild', json=payload).json()['guild']
-    
-    def save_guild_and_member_data(self, guild_data_request: dict[str, Any], member_data_list: list[dict]) -> requests.Response:
-        basename = f"{guild_data_request['profile']['id']}_latest_request.json"
-        guild_data_request['member'] = member_data_list
-        with open(basename, 'w') as file:
-            json.dump(guild_data_request, file)
-        # headers = {
-        #     'Content-Type': 'json'
-        # }
-        # url = f'https://storage.googleapis.com/upload/storage/v1/b/{self.bucket_name}/o?uploadType=media&name=latest_request.json'
-        # return requests.post(url, data=guild_data_request, headers=headers)
-        client = storage.Client(project=self.project)
-        bucket = client.bucket(self.bucket_name)
-        blob = bucket.blob(basename)
-        blob.upload_from_filename(basename, content_type='json')
-        return requests.Response.ok
