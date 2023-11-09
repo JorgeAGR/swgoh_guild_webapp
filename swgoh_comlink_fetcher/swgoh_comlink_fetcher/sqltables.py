@@ -30,13 +30,26 @@ class Raid:
         scores_df = scores_df.join(allycode_df.set_index('playerId'), on='playerId').drop(['memberRank', 'memberAttempt'], axis=1).rename(rename_mapping, axis=1)
         scores_df['EndDate'] = datetime.date.fromtimestamp(int(guild_data_request['recentRaidResult'][0]['endTime'])).isoformat()
         return scores_df
+    
+    @classmethod
+    def _build_dummy_krayt_raid(cls) -> Self:
+        return cls('kraytdragon', 3, datetime.date.fromtimestamp(0)) # verify raid_id with requests json
+    
+    @classmethod
+    def _build_dummy_endor_raid(cls) -> Self:
+        return cls('endor', 6, datetime.date.fromtimestamp(0)) # verify raid_id when raid comes out
+    
+    @classmethod
+    def build_dummy_raid(cls, raid_id) -> Self:
+        return {'kraytdragon': cls._build_dummy_krayt_raid,
+                'endor': cls._build_dummy_endor_raid}[raid_id] # again, check raid_ids
 
 
 @dataclass
 class RaidSQLTable(abc.ABC):
     raid: Raid
     table_location: str
-    url: str
+    host: str
 
     @property
     def schema(self) -> dict[str, type]:
@@ -80,17 +93,34 @@ class RaidSQLTable(abc.ABC):
         '''
         return self.query(query)
 
+    def raid_results(self, interval_days: int=30) -> pd.DataFrame:
+        query = f'''
+        SELECT
+        *
+        FROM
+        `{self.table_location}.{self.raid.id}` t
+        WHERE DATE(EndDate) IN
+        (
+        SELECT 
+            DATE(EndDate) AS recent_partition
+        FROM `{self.table_location}.{self.raid.id}`
+        WHERE DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {interval_days} DAY)
+        )
+        AND DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {interval_days} DAY)
+        '''
+        return self.query(query)    
+
     @abc.abstractmethod
     def write(self, rows: list[dict]) -> None:
         return
     
 
 @dataclass
-class RaidGoogleBigQueryTable(RaidSQLTable):
-    project: str
+class RaidBigQueryTable(RaidSQLTable):
     location: str
     
     def __post_init__(self):
+        self.project = self.host
         self.client = bigquery.Client(self.project)
         return
     
@@ -103,5 +133,5 @@ class RaidGoogleBigQueryTable(RaidSQLTable):
 
 if __name__ == '__main__':
     raid = Raid('krayt_results', 3)
-    sqltable = RaidGoogleBigQueryTable(raid, 'swgoh-guild-webapp.raid_results', 'swgoh-guild-webapp.raid_results', 'swgoh-guild-webapp', 'us-central1')
+    sqltable = RaidBigQueryTable(raid, 'swgoh-guild-webapp.raid_results', 'swgoh-guild-webapp.raid_results', 'swgoh-guild-webapp', 'us-central1')
     print(0)

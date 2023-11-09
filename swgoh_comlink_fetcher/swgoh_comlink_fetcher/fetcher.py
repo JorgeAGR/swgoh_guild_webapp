@@ -19,9 +19,7 @@ test allycode: 795921637
 
 @dataclass
 class SwgohCommlinkFetcher:
-    project: str
     comlink_host: str
-    bucket_name: str
     
     @property
     def game_version(self) -> str:
@@ -106,7 +104,7 @@ class SwgohCommlinkFetcher:
         return requests.post(f'{self.comlink_host}/guild', json=payload).json()['guild']
     
     def save_guild_and_member_data(self, guild_data_request: dict[str, Any], member_data_list: list[dict]) -> requests.Response:
-        basename = 'latest_request.json'
+        basename = f"{guild_data_request['profile']['id']}_latest_request.json"
         guild_data_request['member'] = member_data_list
         with open(basename, 'w') as file:
             json.dump(guild_data_request, file)
