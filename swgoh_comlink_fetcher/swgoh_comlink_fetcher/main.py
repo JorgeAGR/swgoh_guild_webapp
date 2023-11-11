@@ -1,13 +1,14 @@
 from dataclasses import dataclass, field
 from typing import Self, Any
-import requests
+import http
 import pandas as pd
 import os
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, Response
+from fastapi.responses import JSONResponse
 import datetime
-from fetcher import SwgohCommlinkFetcher
-from filestorage import GoogleCloudFileManager
-from sqltables import RaidBigQueryTable, Raid
+from swgoh_comlink_fetcher.fetcher import SwgohCommlinkFetcher
+from swgoh_comlink_fetcher.filestorage import GoogleCloudFileManager
+from swgoh_comlink_fetcher.sqltables import RaidBigQueryTable, Raid
 
 '''
 TO DOs:
@@ -55,7 +56,7 @@ app = FastAPI()
 # split this up. a fetch is only interacting with the Comlink
 # a forward/proxy_fetch requests to comlink and then send to someone else in their stead 
 @app.post('/comlink/{guild_id}')
-def fetch_latest_guild_data(guild_id: str) -> int:
+def fetch_latest_guild_data(guild_id: str) -> Response:
     comlink_host = os.environ['COMLINK_URL']
     bq_raid_dataset = os.environ['BQ_RAID_DATASET']
     bucket_name = os.environ['BUCKET_NAME']
@@ -67,17 +68,8 @@ def fetch_latest_guild_data(guild_id: str) -> int:
     update_raid_data(bq_raid_dataset, project_name, location, guild_data_request, member_data_list)
 
     save_comlink_guild_data(project_name, bucket_name, guild_data_request, member_data_list)
-    return requests.Response.ok
+    return JSONResponse(content={'message': f'Latest data for {guild_id} fetched.'})
 
-
-@app.get('guild/{guild_id}')
-def get_guild_data(guild_id: str) -> dict[str, Any]:
-    comlink_host = os.environ['COMLINK_URL']
-    bq_raid_dataset = os.environ['BQ_RAID_DATASET']
-    bucket_name = os.environ['BUCKET_NAME']
-    project_name = os.environ['PROJECT_NAME']
-    location = os.environ['LOCATION']
-    return
 
 '''
 TODO:
@@ -87,16 +79,16 @@ TODO:
 - And how to handle optional arguments
 '''
 @app.get('/raid/{guild_id}') # modify this wil multiple arguments
-def get_raid_results(guild_id: str, raid_id: str, interval_days: int=30) -> int:
+def get_raid_results(guild_id: str, raid_id: str='kraytdragon', interval_days: int=30) -> dict[str, dict]:
     bq_raid_dataset = os.environ['BQ_RAID_DATASET']
     project_name = os.environ['PROJECT_NAME']
     location = os.environ['LOCATION']
 
     raid = Raid.build_dummy_raid(raid_id)
-    bq_table = RaidBigQueryTable(raid, bq_raid_dataset, bq_raid_dataset, project_name, location)
+    bq_table = RaidBigQueryTable(raid, bq_raid_dataset, project_name, location)
     raid_results = bq_table.raid_results(interval_days)
 
-    return raid_results.to_json()
+    return raid_results.to_dict()
 
 
 if __name__ == '__main__':
@@ -105,5 +97,6 @@ if __name__ == '__main__':
     os.environ['BUCKET_NAME'] = 'swgoh_data'
     os.environ['PROJECT_NAME'] = 'swgoh-guild-webapp'
     os.environ['LOCATION'] = 'us-central1'
-    response = fetch_latest_guild_data('dYXen85NS3SCrdllQ4lAEg')
+    # response = fetch_latest_guild_data('dYXen85NS3SCrdllQ4lAEg')
+    raid = get_raid_results('dYXen85NS3SCrdllQ4lAEg')
     print(0)

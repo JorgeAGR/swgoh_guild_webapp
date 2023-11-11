@@ -42,8 +42,8 @@ class Raid:
     
     @classmethod
     def build_dummy_raid(cls, raid_id) -> Self:
-        return {'kraytdragon': cls._build_dummy_krayt_raid,
-                'endor': cls._build_dummy_endor_raid}[raid_id] # again, check raid_ids
+        return {'kraytdragon': cls._build_dummy_krayt_raid(),
+                'endor': cls._build_dummy_endor_raid()}[raid_id] # again, check raid_ids
 
 
 @dataclass
