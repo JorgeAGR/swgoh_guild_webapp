@@ -5,9 +5,9 @@ import pandas as pd
 import os
 from fastapi import FastAPI, APIRouter
 import datetime
-from swgoh_comlink_fetcher.fetcher import SwgohCommlinkFetcher
-from swgoh_comlink_fetcher.filestorage import GoogleCloudFileManager
-from swgoh_comlink_fetcher.sqltables import RaidBigQueryTable, Raid
+from fetcher import SwgohCommlinkFetcher
+from filestorage import GoogleCloudFileManager
+from sqltables import RaidBigQueryTable, Raid
 
 '''
 TO DOs:
@@ -55,7 +55,7 @@ app = FastAPI()
 # split this up. a fetch is only interacting with the Comlink
 # a forward/proxy_fetch requests to comlink and then send to someone else in their stead 
 @app.post('/comlink/{guild_id}')
-def fetch_latest_guild_data(guild_id: str) -> dict[str, Any]:
+def fetch_latest_guild_data(guild_id: str) -> int:
     comlink_host = os.environ['COMLINK_URL']
     bq_raid_dataset = os.environ['BQ_RAID_DATASET']
     bucket_name = os.environ['BUCKET_NAME']
@@ -67,7 +67,7 @@ def fetch_latest_guild_data(guild_id: str) -> dict[str, Any]:
     update_raid_data(bq_raid_dataset, project_name, location, guild_data_request, member_data_list)
 
     save_comlink_guild_data(project_name, bucket_name, guild_data_request, member_data_list)
-    return guild_data_request
+    return requests.Response.ok
 
 
 @app.get('guild/{guild_id}')
@@ -100,7 +100,7 @@ def get_raid_results(guild_id: str, raid_id: str, interval_days: int=30) -> int:
 
 
 if __name__ == '__main__':
-    os.environ['COMLINK_URL'] = 'http://localhost:3200'
+    os.environ['COMLINK_URL'] = 'https://swgoh-comlink-4hzooxs5za-uc.a.run.app'#'http://localhost:3200'
     os.environ['BQ_RAID_DATASET'] = 'swgoh-guild-webapp.raid_results'
     os.environ['BUCKET_NAME'] = 'swgoh_data'
     os.environ['PROJECT_NAME'] = 'swgoh-guild-webapp'

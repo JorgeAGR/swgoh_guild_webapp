@@ -7,6 +7,7 @@ import abc
 import json
 from google.cloud import storage
 
+@dataclass
 class FileManager(abc.ABC):
     host: str
 
@@ -22,6 +23,7 @@ class FileManager(abc.ABC):
         return
 
 
+@dataclass
 class GoogleCloudFileManager(FileManager):
     bucket_name: str
     '''

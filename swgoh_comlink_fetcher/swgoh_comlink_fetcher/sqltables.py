@@ -29,6 +29,7 @@ class Raid:
                                     'name': [member['name'] for member in member_data_list]})
         scores_df = scores_df.join(allycode_df.set_index('playerId'), on='playerId').drop(['memberRank', 'memberAttempt'], axis=1).rename(rename_mapping, axis=1)
         scores_df['EndDate'] = datetime.date.fromtimestamp(int(guild_data_request['recentRaidResult'][0]['endTime'])).isoformat()
+        scores_df = scores_df.dropna()
         return scores_df
     
     @classmethod
