@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import json
 import requests
-from streamlit_app.raid import Raid
+from raid import Raid
 
 
 # @st.cache_data(show_spinner=False)
