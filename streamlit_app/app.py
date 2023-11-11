@@ -1,10 +1,9 @@
 import streamlit as st
 import json
 import requests
-from src.app_utils import *
-from src.raid import Raid
+from app_utils import *
+from raid import Raid
 import pandas as pd
-
 
 @st.cache_data(show_spinner=False, ttl=24*60*60)
 def get_raid_data(fetcher_url: str, guild_id: str, raid_id: str, interval_days: int) -> pd.DataFrame:
