@@ -71,13 +71,6 @@ def fetch_latest_guild_data(guild_id: str) -> Response:
     return JSONResponse(content={'message': f'Latest data for {guild_id} fetched.'})
 
 
-'''
-TODO:
-- Read API docs on how to use multiple arguments for a request.
-  In this case, I think the right thing is to provide a 'guild_id'
-  and a 'raid_id' to indicate which raid you want
-- And how to handle optional arguments
-'''
 @app.get('/raid/{guild_id}') # modify this wil multiple arguments
 def get_raid_results(guild_id: str, raid_id: str='kraytdragon', interval_days: int=30) -> dict[str, dict]:
     bq_raid_dataset = os.environ['BQ_RAID_DATASET']
