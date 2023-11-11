@@ -1,8 +1,8 @@
 import streamlit as st
 import json
 import requests
-from app_utils import *
-from raid import Raid
+from src.app_utils import *
+from src.raid import Raid
 import pandas as pd
 
 @st.cache_data(show_spinner=False, ttl=24*60*60)
