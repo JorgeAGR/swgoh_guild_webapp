@@ -45,7 +45,8 @@ def draw_guild_roster_view() -> None:
     return st.dataframe(data=st.session_state.raid_data.df,
                         hide_index=True,
                         column_config={
-                            'Score History': st.column_config.LineChartColumn(
+                            'Score': st.column_config.LineChartColumn(
+                                'Score History',
                                 width='medium'
                             )
                         },
