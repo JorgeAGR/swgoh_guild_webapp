@@ -46,12 +46,16 @@ def to_expected_percent(scores: list[float], average_score: float, buckets: int=
     score_percent = [intervals_dict[list(intervals_dict.keys())[bucket_id]] for bucket_id in nearest_score_bucket]
     return score_percent
 
+
 def to_max_percent(scores: list[float], buckets: int=4) -> list[float]:
     return to_expected_percent(scores, max(scores), buckets)
 
 
 def draw_guild_roster_view() -> None:
-    st.header(f'Viewing roster for {st.session_state.guild_name}')
+    st.header(f'Viewing raid performance for {st.session_state.guild_name}')
+    latest_score = st.session_state.raid_data.summary_df.iloc[-1].Score
+    previous_score = st.session_state.raid_data.summary_df.iloc[-2].Score
+    st.metric('Most recent score', f'{latest_score:,}', f'{int(latest_score-previous_score):,}')
     reward_avg_score = st.session_state.raid_data.current_reward/len(st.session_state.raid_data.df)
     st.line_chart(st.session_state.raid_data.summary_df, x='EndDate', y='Score', color=(219, 58, 58))
     modified_df = st.session_state.raid_data.df.copy()
@@ -82,6 +86,7 @@ def draw_guild_roster_view() -> None:
                         },
                         use_container_width=True,
                         height=(len(st.session_state.raid_data.df) + 1) * 35 + 3)
+
 
 if __name__ == '__main__':
     app_startup()
