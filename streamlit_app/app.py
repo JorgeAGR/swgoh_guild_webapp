@@ -20,7 +20,7 @@ def app_startup() -> None:
         'guild_id': 'dYXen85NS3SCrdllQ4lAEg',
         'guild_name': 'Ascendant Knights',
         'swgoh_comlinK_fetcher_url': 'https://swgoh-comlink-fetcher-4hzooxs5za-uc.a.run.app',
-        'raid': 'kraytdragon',
+        'raid': 'speederbike',
         'raid_interval': 30, # days
         'out_path': '/mnt/d/data/swgoh/guilds',
         'op_unit_slack': 3, # this var is to denote the "danger zone" for unit availability vs planetary op need
@@ -62,7 +62,6 @@ def draw_guild_roster_view() -> None:
     #modified_df.loc[:,'Score'] = modified_df.Score.apply(lambda x: [round(i/1e6,1) for i in x])
     modified_df.loc[:, 'Expected Score'] = modified_df.Score.apply(to_expected_percent, args=(reward_avg_score, 5))
     modified_df.loc[:,'Max Score'] = modified_df.Score.apply(to_max_percent, args=(4,))
-    print(modified_df)
     return st.dataframe(data=modified_df,
                         hide_index=True,
                         column_config={
