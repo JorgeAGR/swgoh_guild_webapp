@@ -85,11 +85,12 @@ def get_raid_results(guild_id: str, raid_id: str='kraytdragon', interval_days: i
 
 
 if __name__ == '__main__':
-    os.environ['COMLINK_URL'] = 'https://swgoh-comlink-4hzooxs5za-uc.a.run.app'#'http://localhost:3200'
-    os.environ['BQ_RAID_DATASET'] = 'swgoh-guild-webapp.raid_results'
-    os.environ['BUCKET_NAME'] = 'swgoh_data'
-    os.environ['PROJECT_NAME'] = 'swgoh-guild-webapp'
-    os.environ['LOCATION'] = 'us-central1'
-    # response = fetch_latest_guild_data('dYXen85NS3SCrdllQ4lAEg')
-    raid = get_raid_results('dYXen85NS3SCrdllQ4lAEg')
+    import yaml
+    
+    with open('config/environ_vars.yaml', 'r') as file:
+        environ_vars = yaml.safe_load(file)
+    for var in environ_vars:
+        os.environ[var] = environ_vars[var]
+
+    response = get_raid_results(os.environ['GUILD_ID'], os.environ['RAID_ID'])
     print(0)

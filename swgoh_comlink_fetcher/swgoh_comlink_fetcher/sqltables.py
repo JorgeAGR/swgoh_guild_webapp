@@ -37,13 +37,13 @@ class Raid:
         return cls('kraytdragon', 3, datetime.date.fromtimestamp(0)) # verify raid_id with requests json
     
     @classmethod
-    def _build_dummy_endor_raid(cls) -> Self:
-        return cls('endor', 6, datetime.date.fromtimestamp(0)) # verify raid_id when raid comes out
+    def _build_dummy_speederbike_raid(cls) -> Self:
+        return cls('speederbike', 6, datetime.date.fromtimestamp(0)) # verify raid_id when raid comes out
     
     @classmethod
     def build_dummy_raid(cls, raid_id) -> Self:
         return {'kraytdragon': cls._build_dummy_krayt_raid(),
-                'endor': cls._build_dummy_endor_raid()}[raid_id] # again, check raid_ids
+                'speederbike': cls._build_dummy_speederbike_raid()}[raid_id] # again, check raid_ids
 
 
 @dataclass
@@ -130,9 +130,3 @@ class RaidBigQueryTable(RaidSQLTable):
     
     def write(self, rows: list[dict]) -> None:
         return self.client.insert_rows_json(f'{self.table_location}.{self.raid.id}', rows)
-    
-
-if __name__ == '__main__':
-    raid = Raid('krayt_results', 3)
-    sqltable = RaidBigQueryTable(raid, 'swgoh-guild-webapp.raid_results', 'swgoh-guild-webapp.raid_results', 'swgoh-guild-webapp', 'us-central1')
-    print(0)
