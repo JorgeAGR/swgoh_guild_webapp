@@ -60,7 +60,7 @@ class RaidSQLTable(abc.ABC):
     def query(self, query: str) -> None:
         return
     
-    def latest_raid_date(self) -> pd.DataFrame:
+    def latest_raid_date(self, search_interval=30) -> datetime.date:
         query = f'''
         SELECT
         DISTINCT(EndDate)
@@ -71,13 +71,19 @@ class RaidSQLTable(abc.ABC):
         SELECT 
             MAX(DATE(EndDate)) AS max_partition
         FROM `{self.table_location}.{self.raid.id}`
-        WHERE DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {self.raid.duration} DAY)
+        WHERE DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {search_interval} DAY)
         )
-        AND DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {self.raid.duration} DAY)
+        AND DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {search_interval} DAY)
         '''
-        return self.query(query)
+        latest_raid_date = self.query(query)
+        if len(latest_raid_date) == 0:
+            latest_raid_date = datetime.date.fromtimestamp(0)
+        else:
+            latest_raid_date = latest_raid_date.iloc[0].EndDate
+        return latest_raid_date
     
     def latest_raid_results(self) -> pd.DataFrame:
+        latest_raid_date = self.latest_raid_date()
         query = f'''
         SELECT
         *
@@ -88,9 +94,9 @@ class RaidSQLTable(abc.ABC):
         SELECT 
             MAX(DATE(EndDate)) AS max_partition
         FROM `{self.table_location}.{self.raid.id}`
-        WHERE DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {self.raid.duration} DAY)
+        WHERE DATE(EndDate) = "{latest_raid_date}"
         )
-        AND DATE(EndDate) >= DATE_SUB(CURRENT_DATE(), INTERVAL {self.raid.duration} DAY)
+        AND DATE(EndDate) == "{latest_raid_date}"
         '''
         return self.query(query)
 

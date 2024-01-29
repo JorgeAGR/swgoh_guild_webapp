@@ -33,10 +33,6 @@ def update_raid_data(bq_raid_dataset: str, project_name: str, location: str,
     raid = Raid.build_from_guild_request(guild_data_request)
     bq_table = RaidBigQueryTable(raid, bq_raid_dataset, project_name, location)
     latest_raid_date = bq_table.latest_raid_date()
-    if len(latest_raid_date) == 0:
-        latest_raid_date = datetime.date.fromtimestamp(0)
-    else:
-        latest_raid_date = latest_raid_date.iloc[0].EndDate
     if raid.raid_end_date > latest_raid_date:
         scores_rows = raid.raid_result_df(guild_data_request, member_data_list).to_dict(orient='records')
         errors = bq_table.write(scores_rows)
@@ -90,7 +86,8 @@ if __name__ == '__main__':
     with open('config/environ_vars.yaml', 'r') as file:
         environ_vars = yaml.safe_load(file)
     for var in environ_vars:
-        os.environ[var] = environ_vars[var]
+        os.environ[var] = str(environ_vars[var])
 
-    response = get_raid_results(os.environ['GUILD_ID'], os.environ['RAID_ID'])
+    # response = get_raid_results(os.environ['GUILD_ID'], os.environ['RAID_ID'])
+    response = fetch_latest_guild_data(os.environ['GUILD_ID'])
     print(0)
