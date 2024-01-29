@@ -18,6 +18,7 @@ class Raid:
     def _raids_rewards_thresholds() -> dict[str, tuple]:
         return {
             'kraytdragon': (10e6, 17e6, 25e6, 90e6, 130e6, 265e6, 416e6, 520e6),
+            'speederbike': (16e6, 23.2e6, 36e6, 108e6, 125.6e6, 144e6, 208e6, 424e6),
         }
     
     @staticmethod

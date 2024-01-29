@@ -51,17 +51,33 @@ def to_max_percent(scores: list[float], buckets: int=4) -> list[float]:
     return to_expected_percent(scores, max(scores), buckets)
 
 
+def format_allycode(allycode: int) -> str:
+    allycode = str(allycode)
+    new_allycode = ''
+    for i, integer in enumerate(allycode):
+        new_allycode += integer
+        if i%3 == 2:
+            new_allycode += '-'
+    new_allycode = new_allycode[:-1]
+    return new_allycode
+
+
 def draw_guild_roster_view() -> None:
     st.header(f'Viewing raid performance for {st.session_state.guild_name}')
     latest_score = st.session_state.raid_data.summary_df.iloc[-1].Score
-    previous_score = st.session_state.raid_data.summary_df.iloc[-2].Score
+    try:
+        previous_score = st.session_state.raid_data.summary_df.iloc[-2].Score
+    except:
+        previous_score = 0
     st.metric('Most recent score', f'{latest_score:,}', f'{int(latest_score-previous_score):,}')
     reward_avg_score = st.session_state.raid_data.current_reward/len(st.session_state.raid_data.df)
     st.line_chart(st.session_state.raid_data.summary_df, x='EndDate', y='Score', color=(219, 58, 58))
     modified_df = st.session_state.raid_data.df.copy()
     #modified_df.loc[:,'Score'] = modified_df.Score.apply(lambda x: [round(i/1e6,1) for i in x])
-    modified_df.loc[:, 'Expected Score'] = modified_df.Score.apply(to_expected_percent, args=(reward_avg_score, 5))
+    modified_df.loc[:,'Expected Score'] = modified_df.Score.apply(to_expected_percent, args=(reward_avg_score, 5))
     modified_df.loc[:,'Max Score'] = modified_df.Score.apply(to_max_percent, args=(4,))
+    modified_df.loc[:,'Allycode'] = modified_df.Allycode.map(format_allycode)
+    print(modified_df)
     return st.dataframe(data=modified_df,
                         hide_index=True,
                         column_config={
