@@ -86,6 +86,7 @@ def draw_guild_roster_view() -> None:
                                 width='medium',
                                 help='History of scores in Millions of points'
                             ),
+                            'EndDate': None,
                             'Expected Score': st.column_config.LineChartColumn(
                                 'Expected Score % History',
                                 width='medium',

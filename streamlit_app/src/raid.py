@@ -42,5 +42,19 @@ class Raid:
         df = latest_scores[['Allycode', 'Name']]
         df.loc[:,'Latest Score'] = latest_scores['Score'].values
         # reversed to get it in correct chronological order
-        df = df.join(raw_df[raw_df.Allycode.isin(df.Allycode)].groupby('Allycode')['Score'].apply(list).apply(lambda x: list(reversed(x))), on='Allycode')
+        df = df.join(raw_df[raw_df.Allycode.isin(df.Allycode)].groupby('Allycode')['Score'].apply(list), on='Allycode')
+        df = df.join(raw_df[raw_df.Allycode.isin(df.Allycode)].groupby('Allycode')['EndDate'].apply(list), on='Allycode')
         return df
+    
+
+if __name__ == "__main__":
+    import requests
+    import json
+
+    fetcher_url = 'https://swgoh-comlink-fetcher-4hzooxs5za-uc.a.run.app'
+    guild_id = 'dYXen85NS3SCrdllQ4lAEg'
+    raid_id = 'speederbike'
+    interval_days = 30
+    response = requests.get(f'{fetcher_url}/raid/{guild_id}?raid_id={raid_id}&interval_days={interval_days}')
+    df_dict = json.loads(response.content)
+    raid = Raid(raid_id, pd.DataFrame(df_dict))
