@@ -10,16 +10,6 @@ from swgoh_comlink_fetcher.fetcher import SwgohCommlinkFetcher
 from swgoh_comlink_fetcher.filestorage import GoogleCloudFileManager
 from swgoh_comlink_fetcher.sqltables import RaidBigQueryTable, Raid
 
-'''
-TO DOs:
-- Include fetching and saving 'lastActivity' per player.
--- To convert to UTC timestamp:
-    return['lastActivity']/1000
-    so to datetime:
-    datetime.datetime.fromtimestamp(return['lastActivity']/1000)
-test allycode: 795921637
-'''
-
 
 def request_comlink_guild_data(comlink_host: str, guild_id: str) -> tuple[dict, dict]:
     comlink_fetcher = SwgohCommlinkFetcher(comlink_host)
@@ -49,8 +39,6 @@ def save_comlink_guild_data(project_name: str, bucket_name: str,
 app = FastAPI()
 
 
-# split this up. a fetch is only interacting with the Comlink
-# a forward/proxy_fetch requests to comlink and then send to someone else in their stead 
 @app.post('/comlink/{guild_id}')
 def fetch_latest_guild_data(guild_id: str) -> Response:
     comlink_host = os.environ['COMLINK_URL']
