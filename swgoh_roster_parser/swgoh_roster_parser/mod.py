@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Self
-from abc import abstractmethod, abstractstaticmethod
+from abc import abstractstaticmethod
 
 
 class MappedDescriptor:
