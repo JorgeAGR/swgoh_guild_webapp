@@ -17,8 +17,8 @@ def app_startup() -> None:
     st.set_page_config(layout="wide")
     start_vars = {
         # 'allycode': '000000000',
-        'guild_id': 'dYXen85NS3SCrdllQ4lAEg',
-        'guild_name': 'Ascendant Knights',
+        'guild_id': 'lmRmx2tqQaSAKBI4t4g-Yg',
+        'guild_name': 'Imperial Rebellion 940',
         'swgoh_comlinK_fetcher_url': 'https://swgoh-comlink-fetcher-4hzooxs5za-uc.a.run.app',
         'raid': 'speederbike',
         'raid_interval': 30, # days
